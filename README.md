@@ -1,4 +1,4 @@
-# codyvsjoseph
+# cody-joseph
 
 One page, two people. Cody edits `cody.html`, Joseph edits `joseph.html` — that's it, that's the whole workflow. `index.html` fetches both fragments and drops them side by side, sharing one stylesheet so neither side can clash with the other no matter what goes in them.
 
@@ -73,7 +73,7 @@ To use a photo instead, drop an `<img>` in there and delete the letter:
 <div class="portrait"><img src="cody-photo.jpg" alt="Cody"></div>
 ```
 
-It'll get cropped to fill the badge (`object-fit: cover`), so a roughly square image looks best. No image → you get the letter. Never both at once — pick one. (The visual  does this for you with a checkbox.)
+It'll get cropped to fill the badge (`object-fit: cover`), so a roughly square image looks best. No image → you get the letter. Never both at once — pick one. (The visual editor does this for you with a checkbox.)
 
 ### Background image (optional)
 
@@ -96,6 +96,10 @@ python3 -m http.server 8000
 ```
 
 Then open `http://localhost:8000`. Once it's pushed to GitHub Pages, this isn't an issue — everything's served over `https://` and `fetch()` works fine.
+
+## Battle Start
+
+There's a button below the split that generates a short, ridiculous, randomized battle report using whatever's actually in `cody.html` and `joseph.html` right now — real names, real special moves, real stat numbers. Nothing to configure; it just reads the page. Every run is different (length, moves used, who wins), and the win chance is weighted (not decided) by total stats, so it's not always the same outcome. Hit "Run it back" inside the result to reroll without closing it.
 
 ## Deploying
 

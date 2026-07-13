@@ -42,6 +42,28 @@
     </section>
   </main>
 
+  <section class="battle-arena">
+    <button id="battle-btn" class="battle-button" disabled>
+      <span class="battle-button-glow" aria-hidden="true"></span>
+      <span class="battle-button-label">⚔ Battle Start</span>
+    </button>
+    <p class="battle-hint">generates a completely unhinged battle using both sides' actual stats and moves</p>
+  </section>
+
+  <div id="battle-overlay" class="battle-overlay" hidden>
+    <div class="battle-modal">
+      <div class="battle-modal-head">
+        <span class="battle-modal-title">Battle Report</span>
+        <button class="battle-close" id="battle-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="battle-log" id="battle-log"></div>
+      <div class="battle-modal-actions">
+        <button class="battle-btn-ghost" id="battle-again">Run it back</button>
+        <button class="battle-btn-primary" id="battle-done">Done</button>
+      </div>
+    </div>
+  </div>
+
   <footer>maintained separately &middot; settled on the seam</footer>
 
   <script src="script.js"></script>
