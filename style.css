@@ -114,7 +114,7 @@ body{
   background:radial-gradient(ellipse at left, var(--cody-glow), transparent 70%);
 }
 
-.half > *{ position:relative; z-index:1; }
+.half > *:not(.glow){ position:relative; z-index:1; }
 
 /* seam: thin animated centerline + interlocking monogram */
 .seam{

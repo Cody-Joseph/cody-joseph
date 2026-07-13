@@ -17,5 +17,5 @@ async function loadHalf(url, targetId){
   }
 }
 
-loadHalf('cody.html', 'cody-half');
-loadHalf('joseph.html', 'joseph-half');
+loadHalf('cody.html', 'cody-content');
+loadHalf('joseph.html', 'joseph-content');
