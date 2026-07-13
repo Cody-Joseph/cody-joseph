@@ -1,4 +1,4 @@
-# cody-joseph
+# codyvsjoseph
 
 One page, two people. Cody edits `cody.html`, Joseph edits `joseph.html` — that's it, that's the whole workflow. `index.html` fetches both fragments and drops them side by side, sharing one stylesheet so neither side can clash with the other no matter what goes in them.
 
@@ -13,10 +13,17 @@ One page, two people. Cody edits `cody.html`, Joseph edits `joseph.html` — tha
 | `script.js` | rarely | fetches `cody.html` / `joseph.html` and injects them |
 | `cody.html` | Cody | just Cody's content — a plain HTML fragment, no `<html>`/`<head>` |
 | `joseph.html` | Joseph | just Joseph's content — same deal |
+| `editor.html` | either of you | a visual form for editing your fragment — no HTML required, ends in a download button |
 
-You basically never need to open `index.html`, `style.css`, or `script.js` unless you're changing the shared layout. Day to day, you're only editing your own fragment.
+You basically never need to open `index.html`, `style.css`, or `script.js` unless you're changing the shared layout. Day to day, you're only editing your own fragment — by hand, or with `editor.html`.
 
-## Editing your side
+## Editing with the visual editor (easiest)
+
+Open `editor.html` in a browser (or serve it locally, see below). Pick your side — it loads your current `cody.html` or `joseph.html`, fills in every field automatically, and shows a live preview as you type: name, tag, bio, portrait, background photo, stats, links, special moves. When you're happy with it, hit **Download** in the top bar and it saves the updated `cody.html`/`joseph.html`, ready to drop back into the repo. No HTML editing required.
+
+If it can't find your existing fragment (e.g. you're opening it standalone), it just starts you off with a blank template instead and tells you so.
+
+## Editing by hand
 
 Copy the structure already in your file. The classes below are what plug into the shared styling — use them and you'll automatically get your side's accent color (green for Cody, blue for Joseph) with zero CSS of your own:
 
@@ -66,17 +73,19 @@ To use a photo instead, drop an `<img>` in there and delete the letter:
 <div class="portrait"><img src="cody-photo.jpg" alt="Cody"></div>
 ```
 
-It'll get cropped to fill the badge (`object-fit: cover`), so a roughly square image looks best. No image → you get the letter. Never both at once — pick one.
+It'll get cropped to fill the badge (`object-fit: cover`), so a roughly square image looks best. No image → you get the letter. Never both at once — pick one. (The visual editor does this for you with a checkbox.)
 
 ### Background image (optional)
 
-Each half can have its own full-bleed background photo behind everything (it gets automatically dimmed with a dark gradient so text stays readable, and your side's accent glow still washes over it). To turn it on, add this anywhere in your fragment:
+Each half can have its own full-bleed background photo behind everything — it gets automatically dimmed with a dark gradient so text stays readable, and your side's accent glow still washes over it, and it stays fully contained to your side only. To turn it on, add this anywhere in your fragment:
 
 ```html
 <img class="bg-photo" src="cody-bg.jpg" alt="">
 ```
 
 `script.js` picks this up on load, applies it as your half's background, and removes the tag itself — it won't show up as an inline image in your content. Leave it out and your side just keeps the plain dark background with the color glow, like now.
+
+**If you add this tag and don't see a background** (or worse, see the raw image break the layout): make sure `script.js` is up to date — this feature needs the version with `applyBackgroundPhoto` in it. `style.css` also hides this tag by default as a safety net, so a stale `script.js` will just make the background silently not apply rather than break the page.
 
 ## Previewing locally
 
