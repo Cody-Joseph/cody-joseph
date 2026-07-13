@@ -2,7 +2,7 @@
 
 One page, two people. Cody edits `cody.html`, Joseph edits `joseph.html` — that's it, that's the whole workflow. `index.html` fetches both fragments and drops them side by side, sharing one stylesheet so neither side can clash with the other no matter what goes in them.
 
-**Live:** https://cody-joseph.github.io/cody-joseph/
+**Live:** https://cody-joseph.github.io/codyvsjoseph/
 
 ## Files
 
@@ -73,7 +73,7 @@ To use a photo instead, drop an `<img>` in there and delete the letter:
 <div class="portrait"><img src="cody-photo.jpg" alt="Cody"></div>
 ```
 
-It'll get cropped to fill the badge (`object-fit: cover`), so a roughly square image looks best. No image → you get the letter. Never both at once — pick one. (The visual editor does this for you with a checkbox.)
+It'll get cropped to fill the badge (`object-fit: cover`), so a roughly square image looks best. No image → you get the letter. Never both at once — pick one. (The visual  does this for you with a checkbox.)
 
 ### Background image (optional)
 
