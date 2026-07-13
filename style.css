@@ -116,6 +116,21 @@ body{
 
 .half > *:not(.glow){ position:relative; z-index:1; }
 
+/* ---------- optional per-side background photo ----------
+   Set by script.js when a fragment includes <img class="bg-photo">.
+   Lives behind .glow, dimmed with a dark gradient so text stays readable. */
+.half.has-bg::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  z-index:0;
+  background-image:
+    linear-gradient(180deg, rgba(10,15,14,0.72), rgba(10,15,14,0.90)),
+    var(--bg-photo);
+  background-size:cover;
+  background-position:center;
+}
+
 /* seam: thin animated centerline + interlocking monogram */
 .seam{
   position:absolute;

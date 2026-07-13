@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fragment Editor — Cody / Joseph</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:            #0a0f0e;
+  --bg-raised:     #10171a;
+  --bg-input:      #0d1414;
+  --line:          rgba(255,255,255,0.10);
+  --text:          #eef4f2;
+  --text-dim:      #8ea39d;
+
+  --cody-accent:   #00c900;
+  --joseph-accent: #2f9bff;
+  --accent:        var(--cody-accent);
+  --accent-dark:   #007a00;
+
+  --font-display:  'Space Grotesk', sans-serif;
+  --font-body:     'Inter', sans-serif;
+  --font-mono:     'JetBrains Mono', monospace;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+html{ scroll-behavior:smooth; }
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  line-height:1.55;
+  min-height:100vh;
+}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:18px 28px;
+  border-bottom:1px solid var(--line);
+  position:sticky; top:0;
+  background:rgba(10,15,14,0.9);
+  backdrop-filter:blur(10px);
+  z-index:10;
+}
+.topbar .brand{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:1rem;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.side-chip{
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  padding:4px 10px;
+  border-radius:100px;
+  border:1px solid var(--line);
+  color:var(--accent);
+}
+.topbar-actions{ display:flex; align-items:center; gap:10px; }
+
+button, .btn{
+  font-family:var(--font-mono);
+  font-size:13px;
+  letter-spacing:0.02em;
+  cursor:pointer;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:transparent;
+  color:var(--text);
+  padding:10px 16px;
+  transition:border-color .15s ease, transform .15s ease, background .15s ease;
+}
+button:hover{ border-color:var(--accent); transform:translateY(-1px); }
+.btn-primary{
+  background:var(--accent);
+  color:var(--bg);
+  border-color:transparent;
+  font-weight:600;
+}
+.btn-primary:hover{ filter:brightness(1.12); transform:translateY(-1px); }
+.btn-ghost{ border-color:transparent; color:var(--text-dim); }
+.btn-ghost:hover{ color:var(--text); border-color:var(--line); }
+.btn-small{ padding:6px 12px; font-size:12px; }
+.btn-danger{ color:#ff8080; }
+.btn-danger:hover{ border-color:#ff8080; }
+
+/* ---------- pick screen ---------- */
+#pick-screen{
+  min-height:calc(100vh - 66px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:40px 24px;
+}
+#pick-screen h1{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:clamp(1.8rem, 4vw, 2.6rem);
+  margin-bottom:10px;
+}
+#pick-screen p.sub{
+  color:var(--text-dim);
+  margin-bottom:48px;
+  max-width:46ch;
+}
+.pick-cards{
+  display:flex;
+  gap:24px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.pick-card{
+  width:240px;
+  padding:32px 24px;
+  border-radius:18px;
+  border:1px solid var(--line);
+  background:var(--bg-raised);
+  cursor:pointer;
+  transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  text-align:left;
+}
+.pick-card:hover{ transform:translateY(-4px); }
+.pick-card .badge{
+  width:56px; height:56px;
+  border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:700; font-style:italic; font-size:1.5rem;
+  color:var(--bg);
+  margin-bottom:18px;
+}
+.pick-card.pick-cody .badge{ background:linear-gradient(160deg, var(--cody-accent), #007a00); }
+.pick-card.pick-joseph .badge{ background:linear-gradient(160deg, var(--joseph-accent), #0a4f96); }
+.pick-card.pick-cody:hover{ border-color:var(--cody-accent); box-shadow:0 0 0 1px var(--cody-accent), 0 12px 32px rgba(0,201,0,0.15); }
+.pick-card.pick-joseph:hover{ border-color:var(--joseph-accent); box-shadow:0 0 0 1px var(--joseph-accent), 0 12px 32px rgba(47,155,255,0.15); }
+.pick-card h2{ font-family:var(--font-display); font-weight:700; font-size:1.2rem; margin-bottom:6px; }
+.pick-card p{ color:var(--text-dim); font-size:0.85rem; }
+
+#load-note{
+  margin-top:28px;
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--text-dim);
+  max-width:52ch;
+  display:none;
+}
+#load-note.show{ display:block; }
+
+/* ---------- editor screen ---------- */
+#editor-screen{ display:none; }
+#editor-screen.show{ display:block; }
+
+.layout{
+  display:grid;
+  grid-template-columns:1fr 420px;
+  gap:0;
+  align-items:start;
+}
+@media (max-width:980px){
+  .layout{ grid-template-columns:1fr; }
+}
+
+.form-col{
+  padding:36px clamp(20px, 4vw, 48px);
+  max-width:720px;
+}
+.preview-col{
+  position:sticky;
+  top:66px;
+  padding:36px 28px;
+  min-height:calc(100vh - 66px);
+  background:var(--bg-raised);
+  border-left:1px solid var(--line);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+@media (max-width:980px){
+  .preview-col{ position:static; border-left:none; border-top:1px solid var(--line); min-height:auto; }
+}
+
+fieldset{
+  border:none;
+  margin-bottom:36px;
+  padding-bottom:32px;
+  border-bottom:1px solid var(--line);
+}
+fieldset:last-of-type{ border-bottom:none; }
+legend{
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:16px;
+}
+
+.field{ margin-bottom:16px; }
+.field:last-child{ margin-bottom:0; }
+.field label{
+  display:block;
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  margin-bottom:6px;
+}
+.field input[type="text"],
+.field input[type="url"],
+.field input[type="number"],
+.field textarea{
+  width:100%;
+  background:var(--bg-input);
+  border:1px solid var(--line);
+  border-radius:10px;
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:14px;
+  padding:11px 13px;
+  transition:border-color .15s ease;
+}
+.field input:focus, .field textarea:focus{
+  outline:none;
+  border-color:var(--accent);
+}
+.field textarea{ resize:vertical; min-height:80px; }
+.field-row{ display:flex; gap:12px; }
+.field-row > .field{ flex:1; }
+
+.checkbox-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--text-dim);
+  margin-bottom:14px;
+  cursor:pointer;
+}
+.checkbox-row input{ accent-color:var(--accent); width:15px; height:15px; }
+
+.dyn-row{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  margin-bottom:10px;
+  padding:12px;
+  background:var(--bg-input);
+  border:1px solid var(--line);
+  border-radius:10px;
+}
+.dyn-row .dyn-fields{ flex:1; display:flex; flex-direction:column; gap:8px; }
+.dyn-row .dyn-fields.row{ flex-direction:row; }
+.dyn-row input{
+  background:var(--bg-raised);
+  border:1px solid var(--line);
+  border-radius:8px;
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:13px;
+  padding:8px 10px;
+}
+.dyn-row input:focus{ outline:none; border-color:var(--accent); }
+.dyn-remove{
+  flex:none;
+  width:30px; height:30px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:transparent;
+  color:var(--text-dim);
+  font-size:14px;
+  display:flex; align-items:center; justify-content:center;
+  padding:0;
+}
+.dyn-remove:hover{ border-color:#ff8080; color:#ff8080; }
+
+.primary-radio{ display:flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim); white-space:nowrap; }
+.primary-radio input{ accent-color:var(--accent); }
+
+.add-row-btn{ margin-top:4px; width:100%; }
+
+/* ---------- live preview card (mirrors the real site's fighter card) ---------- */
+.preview-shell{ width:100%; max-width:360px; }
+.preview-eyebrow{
+  font-family:var(--font-mono);
+  font-size:12px;
+  letter-spacing:0.16em;
+  text-transform:uppercase;
+  margin-bottom:20px;
+  color:var(--accent);
+}
+.preview-header{ display:flex; align-items:center; gap:16px; margin-bottom:20px; }
+.preview-portrait{
+  flex:none; width:64px; height:64px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:700; font-style:italic; font-size:1.5rem;
+  color:var(--bg); overflow:hidden; position:relative;
+  background:linear-gradient(160deg, var(--accent), var(--accent-dark));
+}
+.preview-portrait img{ width:100%; height:100%; object-fit:cover; }
+.preview-name{ font-family:var(--font-display); font-weight:700; font-style:italic; font-size:1.25rem; line-height:1.15; }
+.preview-tag{ font-family:var(--font-mono); font-size:11px; color:var(--text-dim); margin-top:4px; }
+.preview-bio{ color:var(--text-dim); font-size:13.5px; margin-bottom:22px; }
+.preview-stats{ margin-bottom:22px; padding-bottom:20px; border-bottom:1px solid var(--line); }
+.preview-stat{ margin-bottom:10px; }
+.preview-stat:last-child{ margin-bottom:0; }
+.preview-stat-label{ display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-dim); margin-bottom:5px; }
+.preview-stat-label b{ color:var(--text); }
+.preview-stat-track{ height:5px; border-radius:100px; background:rgba(255,255,255,0.08); overflow:hidden; }
+.preview-stat-fill{ height:100%; border-radius:100px; background:linear-gradient(90deg, var(--accent-dark), var(--accent)); }
+.preview-links{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
+.preview-links a{
+  font-family:var(--font-mono); font-size:11px; text-decoration:none; color:var(--text);
+  border:1px solid var(--line); padding:7px 13px; border-radius:100px;
+}
+.preview-links a.primary{ background:var(--accent); color:var(--bg); border-color:transparent; font-weight:500; }
+.preview-section-label{ font-family:var(--font-mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); margin-bottom:10px; }
+.preview-moves li{ list-style:none; border-top:1px solid var(--line); padding:11px 0; display:flex; justify-content:space-between; gap:12px; }
+.preview-moves li:last-child{ border-bottom:1px solid var(--line); }
+.preview-moves .name{ font-weight:600; font-size:13px; }
+.preview-moves .tag{ font-family:var(--font-mono); font-size:10.5px; color:var(--text-dim); white-space:nowrap; }
+.preview-note{
+  font-family:var(--font-mono); font-size:11px; color:var(--text-dim);
+  margin-top:24px; padding-top:18px; border-top:1px dashed var(--line);
+}
+
+#fallback-banner{
+  font-family:var(--font-mono);
+  font-size:12.5px;
+  color:#ffcf8f;
+  background:rgba(255,180,80,0.08);
+  border-bottom:1px solid rgba(255,180,80,0.25);
+  padding:14px clamp(20px, 4vw, 48px);
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="8" cy="12" r="6" stroke="#00c900" stroke-width="1.4"/>
+      <circle cx="16" cy="12" r="6" stroke="#2f9bff" stroke-width="1.4"/>
+    </svg>
+    Fragment Editor
+  </div>
+  <div class="topbar-actions" id="topbar-actions"></div>
+</div>
+
+<!-- ============ PICK SCREEN ============ -->
+<div id="pick-screen">
+  <h1>Which side are you editing?</h1>
+  <p class="sub">This loads your current file, fills in every field, and lets you download the updated version when you're done.</p>
+
+  <div class="pick-cards">
+    <div class="pick-card pick-cody" onclick="pickSide('cody')">
+      <div class="badge">C</div>
+      <h2>Cody</h2>
+      <p>Loads cody.html</p>
+    </div>
+    <div class="pick-card pick-joseph" onclick="pickSide('joseph')">
+      <div class="badge">J</div>
+      <h2>Joseph</h2>
+      <p>Loads joseph.html</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EDITOR SCREEN ============ -->
+<div id="editor-screen">
+  <div id="fallback-banner" style="display:none"></div>
+  <div class="layout">
+    <div class="form-col">
+
+      <fieldset>
+        <legend>Identity</legend>
+        <div class="field">
+          <label for="f-eyebrow">Small label above your name</label>
+          <input type="text" id="f-eyebrow" placeholder="Player 1">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-name">Name</label>
+            <input type="text" id="f-name" placeholder="CodyMKW">
+          </div>
+          <div class="field">
+            <label for="f-tag">Role / class / tagline</label>
+            <input type="text" id="f-tag" placeholder="Save-File Reverse Engineer">
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Portrait</legend>
+        <label class="checkbox-row">
+          <input type="checkbox" id="f-use-image">
+          Use an image instead of a letter badge
+        </label>
+        <div class="field" id="image-field" style="display:none">
+          <label for="f-portrait-src">Image filename or URL</label>
+          <input type="text" id="f-portrait-src" placeholder="cody-photo.jpg">
+        </div>
+        <div class="field" id="letter-field">
+          <label for="f-letter">Badge letter (shown when no image)</label>
+          <input type="text" id="f-letter" maxlength="2" placeholder="C" style="max-width:100px">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Bio</legend>
+        <div class="field">
+          <label for="f-bio">A couple sentences about you</label>
+          <textarea id="f-bio" placeholder="What you do, what you build, what you're about."></textarea>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Background photo (optional)</legend>
+        <label class="checkbox-row">
+          <input type="checkbox" id="f-use-bg">
+          Use a full background photo behind my half
+        </label>
+        <div class="field" id="bg-field" style="display:none">
+          <label for="f-bg-src">Image filename or URL</label>
+          <input type="text" id="f-bg-src" placeholder="cody-bg.jpg">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Stats</legend>
+        <div id="stats-list"></div>
+        <button class="add-row-btn" onclick="addStat()">+ Add stat</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>Links</legend>
+        <div id="links-list"></div>
+        <button class="add-row-btn" onclick="addLink()">+ Add link</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>Special moves</legend>
+        <div id="moves-list"></div>
+        <button class="add-row-btn" onclick="addMove()">+ Add move</button>
+      </fieldset>
+
+    </div>
+
+    <div class="preview-col">
+      <div class="preview-shell">
+        <p class="preview-eyebrow" id="p-eyebrow">Player 1</p>
+        <div class="preview-header">
+          <div class="preview-portrait" id="p-portrait">C</div>
+          <div>
+            <div class="preview-name" id="p-name">Name</div>
+            <div class="preview-tag" id="p-tag">Tag</div>
+          </div>
+        </div>
+        <p class="preview-bio" id="p-bio">Bio goes here.</p>
+        <div class="preview-stats" id="p-stats"></div>
+        <div class="preview-links" id="p-links"></div>
+        <p class="preview-section-label">Special moves</p>
+        <ul class="preview-moves" id="p-moves"></ul>
+        <p class="preview-note">This preview is a simplified stand-in — your real page also blends this into the seam with the other side.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let state = null;
+let currentSide = null;
+
+function blankState(side){
+  return {
+    eyebrow: side === 'cody' ? 'Player 1' : 'Player 2',
+    name: '',
+    tag: '',
+    badgeLetter: '',
+    useImage: false,
+    portraitSrc: '',
+    bio: '',
+    useBg: false,
+    bgSrc: '',
+    stats: [
+      { label: 'Power', value: 50 },
+      { label: 'Defense', value: 50 },
+      { label: 'Speed', value: 50 }
+    ],
+    links: [
+      { label: 'Main link', url: 'https://', primary: true }
+    ],
+    moves: [
+      { name: 'Move name', desc: 'description here' }
+    ]
+  };
+}
+
+function parseFragment(html, side){
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const q = sel => doc.querySelector(sel);
+  const qa = sel => Array.from(doc.querySelectorAll(sel));
+
+  const s = blankState(side);
+
+  const eyebrowEl = q('.eyebrow');
+  if(eyebrowEl) s.eyebrow = eyebrowEl.textContent.trim();
+
+  const nameEl = q('.fighter-name');
+  if(nameEl) s.name = nameEl.textContent.trim();
+
+  const tagEl = q('.fighter-tag');
+  if(tagEl) s.tag = tagEl.textContent.trim();
+
+  const portraitEl = q('.portrait');
+  if(portraitEl){
+    const img = portraitEl.querySelector('img');
+    if(img){
+      s.useImage = true;
+      s.portraitSrc = img.getAttribute('src') || '';
+    }else{
+      s.badgeLetter = portraitEl.textContent.trim();
+    }
+  }
+
+  const bioEl = q('.bio');
+  if(bioEl) s.bio = bioEl.textContent.trim().replace(/\s+/g, ' ');
+
+  const bgImg = q('img.bg-photo');
+  if(bgImg){
+    s.useBg = true;
+    s.bgSrc = bgImg.getAttribute('src') || '';
+  }
+
+  const statRows = qa('.stat-bar');
+  if(statRows.length){
+    s.stats = statRows.map(row => ({
+      label: row.querySelector('.stat-bar-label span')?.textContent.trim() || '',
+      value: parseInt(row.querySelector('.stat-bar-label b')?.textContent.trim() || '0', 10) || 0
+    }));
+  }
+
+  const linkRows = qa('.links a');
+  if(linkRows.length){
+    s.links = linkRows.map(a => ({
+      label: a.textContent.trim(),
+      url: a.getAttribute('href') || '',
+      primary: a.classList.contains('primary')
+    }));
+  }
+
+  const moveRows = qa('.move-list li');
+  if(moveRows.length){
+    s.moves = moveRows.map(li => ({
+      name: li.querySelector('.name')?.textContent.trim() || '',
+      desc: li.querySelector('.tag')?.textContent.trim() || ''
+    }));
+  }
+
+  return s;
+}
+
+async function pickSide(side){
+  currentSide = side;
+  const filename = side + '.html';
+  let loadFailed = false;
+  try{
+    const res = await fetch(filename, { cache: 'no-store' });
+    if(!res.ok) throw new Error(res.status);
+    const html = await res.text();
+    state = parseFragment(html, side);
+  }catch(err){
+    state = blankState(side);
+    loadFailed = true;
+  }
+  enterEditor(loadFailed);
+}
+
+function enterEditor(loadFailed){
+  document.documentElement.style.setProperty('--accent', currentSide === 'cody' ? 'var(--cody-accent)' : 'var(--joseph-accent)');
+  document.documentElement.style.setProperty('--accent-dark', currentSide === 'cody' ? '#007a00' : '#0a4f96');
+
+  document.getElementById('pick-screen').style.display = 'none';
+  document.getElementById('editor-screen').classList.add('show');
+
+  const banner = document.getElementById('fallback-banner');
+  if(loadFailed){
+    banner.textContent = `Couldn't load ${currentSide}.html, so this is starting from a blank template. Put this editor next to your other site files (or serve them together, e.g. python3 -m http.server) and it'll pull in what's already there next time.`;
+    banner.style.display = 'block';
+  }else{
+    banner.style.display = 'none';
+  }
+
+  const topbar = document.getElementById('topbar-actions');
+  topbar.innerHTML = `
+    <span class="side-chip">${currentSide === 'cody' ? 'Editing Cody' : 'Editing Joseph'}</span>
+    <button class="btn-ghost btn-small" onclick="backToPick()">‹ Back</button>
+    <button class="btn-primary" onclick="downloadFragment()">Download ${currentSide}.html</button>
+  `;
+
+  document.getElementById('f-eyebrow').value = state.eyebrow;
+  document.getElementById('f-name').value = state.name;
+  document.getElementById('f-tag').value = state.tag;
+  document.getElementById('f-bio').value = state.bio;
+  document.getElementById('f-use-image').checked = state.useImage;
+  document.getElementById('f-portrait-src').value = state.portraitSrc;
+  document.getElementById('f-letter').value = state.badgeLetter || (state.name.charAt(0) || '');
+  document.getElementById('f-use-bg').checked = state.useBg;
+  document.getElementById('f-bg-src').value = state.bgSrc;
+
+  toggleImageField();
+  toggleBgField();
+
+  renderStats();
+  renderLinks();
+  renderMoves();
+  updatePreview();
+
+  bindSimpleField('f-eyebrow', 'eyebrow');
+  bindSimpleField('f-name', 'name');
+  bindSimpleField('f-tag', 'tag');
+  bindSimpleField('f-bio', 'bio');
+  bindSimpleField('f-portrait-src', 'portraitSrc');
+  bindSimpleField('f-letter', 'badgeLetter');
+  bindSimpleField('f-bg-src', 'bgSrc');
+
+  document.getElementById('f-use-image').onchange = e => {
+    state.useImage = e.target.checked;
+    toggleImageField();
+    updatePreview();
+  };
+  document.getElementById('f-use-bg').onchange = e => {
+    state.useBg = e.target.checked;
+    toggleBgField();
+    updatePreview();
+  };
+}
+
+function backToPick(){
+  document.getElementById('editor-screen').classList.remove('show');
+  document.getElementById('pick-screen').style.display = 'flex';
+  document.getElementById('topbar-actions').innerHTML = '';
+  document.getElementById('fallback-banner').style.display = 'none';
+  state = null;
+  currentSide = null;
+}
+
+function bindSimpleField(id, key){
+  const el = document.getElementById(id);
+  el.oninput = () => { state[key] = el.value; updatePreview(); };
+}
+
+function toggleImageField(){
+  document.getElementById('image-field').style.display = state.useImage ? 'block' : 'none';
+}
+function toggleBgField(){
+  document.getElementById('bg-field').style.display = state.useBg ? 'block' : 'none';
+}
+
+/* ---------- dynamic lists: stats ---------- */
+function renderStats(){
+  const wrap = document.getElementById('stats-list');
+  wrap.innerHTML = '';
+  state.stats.forEach((stat, i) => {
+    const row = document.createElement('div');
+    row.className = 'dyn-row';
+    row.innerHTML = `
+      <div class="dyn-fields row">
+        <input type="text" placeholder="Label" value="${escAttr(stat.label)}" style="flex:2" data-k="label">
+        <input type="number" min="0" max="100" value="${stat.value}" style="flex:1" data-k="value">
+      </div>
+      <button class="dyn-remove" title="Remove">&times;</button>
+    `;
+    const [labelInput, valueInput] = row.querySelectorAll('input');
+    labelInput.oninput = () => { state.stats[i].label = labelInput.value; updatePreview(); };
+    valueInput.oninput = () => {
+      let v = parseInt(valueInput.value || '0', 10);
+      if(isNaN(v)) v = 0;
+      v = Math.max(0, Math.min(100, v));
+      state.stats[i].value = v;
+      updatePreview();
+    };
+    row.querySelector('.dyn-remove').onclick = () => {
+      state.stats.splice(i, 1);
+      renderStats();
+      updatePreview();
+    };
+    wrap.appendChild(row);
+  });
+}
+function addStat(){
+  state.stats.push({ label: '', value: 50 });
+  renderStats();
+  updatePreview();
+}
+
+/* ---------- dynamic lists: links ---------- */
+function renderLinks(){
+  const wrap = document.getElementById('links-list');
+  wrap.innerHTML = '';
+  state.links.forEach((link, i) => {
+    const row = document.createElement('div');
+    row.className = 'dyn-row';
+    row.innerHTML = `
+      <div class="dyn-fields">
+        <div style="display:flex; gap:8px;">
+          <input type="text" placeholder="Label" value="${escAttr(link.label)}" style="flex:1" data-k="label">
+          <label class="primary-radio"><input type="radio" name="primary-link">Primary</label>
+        </div>
+        <input type="url" placeholder="https://" value="${escAttr(link.url)}" data-k="url">
+      </div>
+      <button class="dyn-remove" title="Remove">&times;</button>
+    `;
+    const labelInput = row.querySelector('input[data-k="label"]');
+    const urlInput = row.querySelector('input[data-k="url"]');
+    const primaryRadio = row.querySelector('input[type="radio"]');
+    primaryRadio.checked = !!link.primary;
+    labelInput.oninput = () => { state.links[i].label = labelInput.value; updatePreview(); };
+    urlInput.oninput = () => { state.links[i].url = urlInput.value; updatePreview(); };
+    primaryRadio.onchange = () => {
+      state.links.forEach((l, j) => l.primary = (j === i));
+      updatePreview();
+    };
+    row.querySelector('.dyn-remove').onclick = () => {
+      state.links.splice(i, 1);
+      if(state.links.length && !state.links.some(l => l.primary)) state.links[0].primary = true;
+      renderLinks();
+      updatePreview();
+    };
+    wrap.appendChild(row);
+  });
+}
+function addLink(){
+  state.links.push({ label: '', url: 'https://', primary: state.links.length === 0 });
+  renderLinks();
+  updatePreview();
+}
+
+/* ---------- dynamic lists: moves ---------- */
+function renderMoves(){
+  const wrap = document.getElementById('moves-list');
+  wrap.innerHTML = '';
+  state.moves.forEach((move, i) => {
+    const row = document.createElement('div');
+    row.className = 'dyn-row';
+    row.innerHTML = `
+      <div class="dyn-fields">
+        <input type="text" placeholder="Move name" value="${escAttr(move.name)}" data-k="name">
+        <input type="text" placeholder="Description" value="${escAttr(move.desc)}" data-k="desc">
+      </div>
+      <button class="dyn-remove" title="Remove">&times;</button>
+    `;
+    const nameInput = row.querySelector('input[data-k="name"]');
+    const descInput = row.querySelector('input[data-k="desc"]');
+    nameInput.oninput = () => { state.moves[i].name = nameInput.value; updatePreview(); };
+    descInput.oninput = () => { state.moves[i].desc = descInput.value; updatePreview(); };
+    row.querySelector('.dyn-remove').onclick = () => {
+      state.moves.splice(i, 1);
+      renderMoves();
+      updatePreview();
+    };
+    wrap.appendChild(row);
+  });
+}
+function addMove(){
+  state.moves.push({ name: '', desc: '' });
+  renderMoves();
+  updatePreview();
+}
+
+/* ---------- live preview ---------- */
+function updatePreview(){
+  document.getElementById('p-eyebrow').textContent = state.eyebrow || '\u00A0';
+  document.getElementById('p-name').textContent = state.name || 'Name';
+  document.getElementById('p-tag').textContent = state.tag || '\u00A0';
+  document.getElementById('p-bio').textContent = state.bio || '';
+
+  const portrait = document.getElementById('p-portrait');
+  if(state.useImage && state.portraitSrc){
+    portrait.innerHTML = `<img src="${escAttr(state.portraitSrc)}" alt="">`;
+  }else{
+    portrait.textContent = (state.badgeLetter || state.name.charAt(0) || '?').slice(0, 2);
+  }
+
+  const statsWrap = document.getElementById('p-stats');
+  statsWrap.innerHTML = state.stats.map(s => `
+    <div class="preview-stat">
+      <div class="preview-stat-label"><span>${escHtml(s.label || 'Stat')}</span><b>${s.value}</b></div>
+      <div class="preview-stat-track"><div class="preview-stat-fill" style="width:${s.value}%"></div></div>
+    </div>
+  `).join('');
+
+  const linksWrap = document.getElementById('p-links');
+  linksWrap.innerHTML = state.links.map(l => `
+    <a class="${l.primary ? 'primary' : ''}" href="#" onclick="return false">${escHtml(l.label || 'link')}</a>
+  `).join('');
+
+  const movesWrap = document.getElementById('p-moves');
+  movesWrap.innerHTML = state.moves.map(m => `
+    <li><span class="name">${escHtml(m.name || 'Move')}</span><span class="tag">${escHtml(m.desc || '')}</span></li>
+  `).join('');
+}
+
+/* ---------- serialize + download ---------- */
+function escHtml(s){
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function escAttr(s){
+  return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function buildFragment(){
+  let out = '';
+  if(state.useBg && state.bgSrc){
+    out += `<img class="bg-photo" src="${escAttr(state.bgSrc)}" alt="">\n\n`;
+  }
+  out += `<p class="eyebrow">${escHtml(state.eyebrow)}</p>\n\n`;
+  out += `<div class="fighter-header">\n`;
+  if(state.useImage && state.portraitSrc){
+    out += `  <div class="portrait"><img src="${escAttr(state.portraitSrc)}" alt="${escAttr(state.name)}"></div>\n`;
+  }else{
+    out += `  <div class="portrait">${escHtml(state.badgeLetter || state.name.charAt(0) || '?')}</div>\n`;
+  }
+  out += `  <div>\n    <h2 class="fighter-name">${escHtml(state.name)}</h2>\n    <p class="fighter-tag">${escHtml(state.tag)}</p>\n  </div>\n</div>\n\n`;
+  out += `<p class="bio">\n  ${escHtml(state.bio)}\n</p>\n\n`;
+
+  out += `<div class="stat-bars">\n`;
+  state.stats.forEach(s => {
+    out += `  <div class="stat-bar">\n    <div class="stat-bar-label"><span>${escHtml(s.label)}</span><b>${s.value}</b></div>\n    <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${s.value}%"></div></div>\n  </div>\n`;
+  });
+  out += `</div>\n\n`;
+
+  out += `<div class="links">\n`;
+  state.links.forEach(l => {
+    out += `  <a${l.primary ? ' class="primary"' : ''} href="${escAttr(l.url)}" target="_blank" rel="noopener">${escHtml(l.label)}</a>\n`;
+  });
+  out += `</div>\n\n`;
+
+  out += `<p class="section-label">Special moves</p>\n<ul class="move-list">\n`;
+  state.moves.forEach(m => {
+    out += `  <li><span class="name">${escHtml(m.name)}</span><span class="tag">${escHtml(m.desc)}</span></li>\n`;
+  });
+  out += `</ul>\n`;
+
+  return out;
+}
+
+function downloadFragment(){
+  const html = buildFragment();
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = currentSide + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>
